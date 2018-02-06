@@ -39,8 +39,8 @@ namespace AuthJWTDemo.Controllers
                 IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
                 IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
                 var token = encoder.Encode(auth, secretKey);
-                var refresh_token = Guid.NewGuid();
-                return Json(new { code = 50000, message = "登录成功", token = token, refresh_token= refresh_token }, JsonRequestBehavior.DenyGet);
+                var refreshToken = Guid.NewGuid();
+                return Json(new { code = 50000, message = "登录成功", token = token, refresh_token= refreshToken }, JsonRequestBehavior.DenyGet);
             }
             else
             {
