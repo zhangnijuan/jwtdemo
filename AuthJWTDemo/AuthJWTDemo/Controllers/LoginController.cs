@@ -1,4 +1,5 @@
-﻿using AuthJWTDemo.Models;
+﻿using AuthJWTDemo.Common;
+using AuthJWTDemo.Models;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
@@ -33,13 +34,11 @@ namespace AuthJWTDemo.Controllers
                     Exp = (int)Math.Round((DateTime.Now - utime).TotalMilliseconds) + 60
                 };
                 // var secretKey = "GQDstcKsx0NHjPOuXOYg5MbeJ1XT0uFiwDVvVBrk";
-                var secretKey = Request.UserAgent;
-                IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
-                IJsonSerializer serializer = new JsonNetSerializer();
-                IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-                IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-                var token = encoder.Encode(auth, secretKey);
-                var refreshToken = Guid.NewGuid();
+                string token = GetToken(auth);
+                var refreshToken = Guid.NewGuid().ToString();
+                var cacheKey = "refreshToken:" + auth.Uid;
+                RedisHelper redis = new RedisHelper(1);
+                redis.StringSet(cacheKey, refreshToken);
                 return Json(new { code = 50000, message = "登录成功", token = token, refresh_token= refreshToken }, JsonRequestBehavior.DenyGet);
             }
             else
@@ -49,11 +48,49 @@ namespace AuthJWTDemo.Controllers
         }
 
         [HttpPost]
+        [ApiAuthorize]
         public ActionResult GetUser()
         {
             var auth = CallContext.GetData("auth") as AuthInfo;
 
-            return View();
+            return Json(new { auth = auth }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public ActionResult RefreshToken(int uid,string refreshToken)
+        {
+            var cacheKey = "refreshToken:" + uid;
+            RedisHelper redis = new RedisHelper(1);
+            var cache = redis.StringGet(cacheKey);
+            if (cache!=null)
+            {
+                DateTime utime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                AuthInfo auth = new AuthInfo()
+                {
+                    Name = "zhangnijuan",
+                    Uid = 1,
+                    Exp = (int)Math.Round((DateTime.Now - utime).TotalMilliseconds) + 60
+                };
+
+                string token = GetToken(auth);
+                return Json(new { code = 50000, token = token }, JsonRequestBehavior.DenyGet);
+            }
+            else
+            {
+                return Json(new {code=50001,message="refreshToken已经过期，请从新登陆！" }, JsonRequestBehavior.DenyGet);
+            }
+           
+        }
+
+        private string GetToken(AuthInfo auth)
+        {
+            var secretKey = Request.UserAgent;
+            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
+            IJsonSerializer serializer = new JsonNetSerializer();
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
+            var token = encoder.Encode(auth, secretKey);
+            return token;
         }
     }
 }
