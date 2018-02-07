@@ -39,7 +39,7 @@
         var uname = $('#uname').val();
         var pwd = $('#pwd').val();
         $.post('/login/loginserver', { uname, pwd }, res=> {
-            if (res.code == 50000) {
+            if (res.code === 50000) {
                 $('#token').html(res.token);
                 auth = res.token;
             } else {
@@ -56,9 +56,8 @@
             headers:{auth},
             success: res=> {
                 console.log(res.auth);
-
             },
-            dataType: 'json',
+            dataType: 'json'
 
         }).error(res=> { console.log(res);});
 

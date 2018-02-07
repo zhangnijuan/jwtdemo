@@ -14,7 +14,7 @@ namespace AuthJWTDemo.Controllers
 {
     public class LoginController : Controller
     {
-        
+
         // GET: Login
         public ActionResult Index()
         {
@@ -24,27 +24,36 @@ namespace AuthJWTDemo.Controllers
         [HttpPost]
         public ActionResult LoginServer(string uname, string pwd)
         {
-            if (uname == "admin"&&pwd=="123")
+            if (uname == "admin" && pwd == "123")
             {
                 DateTime utime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                 AuthInfo auth = new AuthInfo()
                 {
                     Name = "zhangnijuan",
-                    Uid = 1,
+                    Uid = 2,
                     Exp = (int)Math.Round((DateTime.Now - utime).TotalMilliseconds) + 60
                 };
                 // var secretKey = "GQDstcKsx0NHjPOuXOYg5MbeJ1XT0uFiwDVvVBrk";
                 string token = GetToken(auth);
-                var refreshToken = Guid.NewGuid().ToString();
                 var cacheKey = "refreshToken:" + auth.Uid;
                 RedisHelper redis = new RedisHelper(1);
-                redis.StringSet(cacheKey, refreshToken);
-                return Json(new { code = 50000, message = "登录成功", token = token, refresh_token= refreshToken }, JsonRequestBehavior.DenyGet);
+                string refreshToken;
+                if (string.IsNullOrEmpty(redis.StringGet(cacheKey)))
+                {
+                    refreshToken = Guid.NewGuid().ToString();
+                    redis.StringSet(cacheKey, refreshToken,new TimeSpan(0,1,0));
+                }
+                else
+                {
+                    refreshToken = redis.StringGet(cacheKey);
+                }
+
+                return Json(new { code = 50000, message = "登录成功", token = token, refresh_token = refreshToken }, JsonRequestBehavior.DenyGet);
             }
             else
             {
                 return Json(new { code = 50001, message = "用户名或者密码错误" }, JsonRequestBehavior.DenyGet);
-            }            
+            }
         }
 
         [HttpPost]
@@ -57,18 +66,18 @@ namespace AuthJWTDemo.Controllers
         }
 
         [HttpPost]
-        public ActionResult RefreshToken(int uid,string refreshToken)
+        public ActionResult RefreshToken(int uid, string refreshToken)
         {
             var cacheKey = "refreshToken:" + uid;
             RedisHelper redis = new RedisHelper(1);
             var cache = redis.StringGet(cacheKey);
-            if (cache!=null)
+            if (cache != null)
             {
                 DateTime utime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                 AuthInfo auth = new AuthInfo()
                 {
                     Name = "zhangnijuan",
-                    Uid = 1,
+                    Uid = 2,
                     Exp = (int)Math.Round((DateTime.Now - utime).TotalMilliseconds) + 60
                 };
 
@@ -77,9 +86,9 @@ namespace AuthJWTDemo.Controllers
             }
             else
             {
-                return Json(new {code=50001,message="refreshToken已经过期，请从新登陆！" }, JsonRequestBehavior.DenyGet);
+                return Json(new { code = 50001, message = "refreshToken已经过期，请从新登陆！" }, JsonRequestBehavior.DenyGet);
             }
-           
+
         }
 
         private string GetToken(AuthInfo auth)
