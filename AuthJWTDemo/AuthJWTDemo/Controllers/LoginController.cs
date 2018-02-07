@@ -31,7 +31,7 @@ namespace AuthJWTDemo.Controllers
                 {
                     Name = "zhangnijuan",
                     Uid = 2,
-                    Exp = (int)Math.Round((DateTime.Now - utime).TotalMilliseconds) + 60
+                    Exp = (int)Math.Round((DateTime.Now - utime).TotalSeconds) + 60
                 };
                 // var secretKey = "GQDstcKsx0NHjPOuXOYg5MbeJ1XT0uFiwDVvVBrk";
                 string token = GetToken(auth);
@@ -78,7 +78,7 @@ namespace AuthJWTDemo.Controllers
                 {
                     Name = "zhangnijuan",
                     Uid = 2,
-                    Exp = (int)Math.Round((DateTime.Now - utime).TotalMilliseconds) + 60
+                    Exp = (int)Math.Round((DateTime.Now - utime).TotalSeconds) + 60
                 };
 
                 string token = GetToken(auth);

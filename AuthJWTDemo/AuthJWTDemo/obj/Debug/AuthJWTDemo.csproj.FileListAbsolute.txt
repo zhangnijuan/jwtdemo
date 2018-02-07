@@ -148,3 +148,4 @@ F:\githubdemo\jwtdemo\AuthJWTDemo\AuthJWTDemo\bin\zh-Hans\System.Web.WebPages.De
 F:\githubdemo\jwtdemo\AuthJWTDemo\AuthJWTDemo\bin\zh-Hans\System.Web.WebPages.Razor.resources.dll
 F:\githubdemo\jwtdemo\AuthJWTDemo\AuthJWTDemo\obj\Debug\AuthJWTDemo.dll
 F:\githubdemo\jwtdemo\AuthJWTDemo\AuthJWTDemo\obj\Debug\AuthJWTDemo.pdb
+F:\githubdemo\jwtdemo\AuthJWTDemo\AuthJWTDemo\obj\Debug\AuthJWTDemo.csprojResolveAssemblyReference.cache
