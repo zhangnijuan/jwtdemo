@@ -1,0 +1,67 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+</head>
+<body>
+    <div>
+        <p>
+            用户名： <input type="text" name="name" value="" id="uname" />
+        </p>
+        <p>
+            密码： <input type="text" name="name" value="" id="pwd" />
+        </p>
+        <p>
+            <button id="btn">登录</button>
+        </p>
+        <hr />
+        <p>
+            <button id="getBtn">获取用户信息</button>
+        </p>
+
+        <p>
+            token:<label id="token"></label>
+        </p>
+    </div>
+</body>
+</html>
+<script>
+    let auth = '';
+    $('#btn').on('click', e=> {
+        var uname = $('#uname').val();
+        var pwd = $('#pwd').val();
+        $.post('/login/loginserver', { uname, pwd }, res=> {
+            if (res.code == 50000) {
+                $('#token').html(res.token);
+                auth = res.token;
+            } else {
+                alert(res.message);
+            }
+        }, 'json');
+    });
+
+    $('#getBtn').on('click', e=> {
+
+        $.ajax({
+            type: 'POST',
+            url: '/login/getuser',
+            headers:{auth},
+            success: res=> {
+                console.log(res.auth);
+
+            },
+            dataType: 'json',
+
+        }).error(res=> { console.log(res);});
+
+    });
+</script>
+

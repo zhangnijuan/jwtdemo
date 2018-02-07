@@ -366,5 +366,202 @@ namespace AuthJWTDemo.Common
                 });
         }
         #endregion
+
+        #region SortedSet方法
+        /// <summary>
+        /// 添加
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="score"></param>
+        public bool SortedSetAdd<T>(string key, T value, double score)
+        {
+            key = AddSysCustomKey(key);
+            return Do(redis => redis.SortedSetAdd(key, ConvertJson<T>(value), score));
+        }
+
+        /// <summary>
+        /// 删除
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public bool SortedSetRemove<T>(string key, T value)
+        {
+            key = AddSysCustomKey(key);
+            return Do(redis => redis.SortedSetRemove(key, ConvertJson(value)));
+        }
+
+
+        /// <summary>
+        /// 获取全部
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public List<T> SortedSetRangeByRank<T>(string key)
+        {
+            key = AddSysCustomKey(key);
+            return Do(redis =>
+            {
+                var values = redis.SortedSetRangeByRank(key);
+                return ConvetList<T>(values);
+            });
+        }
+        /// <summary>
+        /// 获取集合中的数量
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public long SortedSetLength(string key)
+        {
+            key = AddSysCustomKey(key);
+            return Do(redis => redis.SortedSetLength(key));
+        }
+        #endregion
+
+        #region key的管理
+        /// <summary>
+        /// 删除单个key
+        /// </summary>
+        /// <param name="key">redis key</param>
+        /// <returns>是否删除成功</returns>
+        public bool KeyDelete(string key)
+        {
+            key = AddSysCustomKey(key);
+            return Do(db => db.KeyDelete(key));
+        }
+
+
+        /// <summary>
+        /// 删除多个key
+        /// </summary>
+        /// <param name="keys">rediskey</param>
+        /// <returns>成功删除的个数</returns>
+        public long KeyDelete(List<string> keys)
+        {
+            List<string> newKeys = keys.Select(AddSysCustomKey).ToList();
+            return Do(db => db.KeyDelete(ConvertRedisKeys(newKeys)));
+        }
+
+
+        // <summary>
+        /// 判断key是否存储
+        /// </summary>
+        /// <param name="key">redis key</param>
+        /// <returns></returns>
+        public bool KeyExists(string key)
+        {
+            key = AddSysCustomKey(key);
+            return Do(db => db.KeyExists(key));
+        }
+
+        /// <summary>
+        /// 重新命名key
+        /// </summary>
+        /// <param name="key">就的redis key</param>
+        /// <param name="newKey">新的redis key</param>
+        /// <returns></returns>
+        public bool KeyRename(string key, string newKey)
+        {
+            key = AddSysCustomKey(key);
+            return Do(db => db.KeyRename(key, newKey));
+        }
+
+        /// <summary>
+        /// 设置Key的时间
+        /// </summary>
+        /// <param name="key">redis key</param>
+        /// <param name="expiry"></param>
+        /// <returns></returns>
+        public bool KeyExpire(string key, TimeSpan? expiry = default(TimeSpan?))
+        {
+            key = AddSysCustomKey(key);
+            return Do(db => db.KeyExpire(key, expiry));
+        }
+
+
+        #endregion
+
+        #region 发布订阅
+        /// <summary>
+        /// Redis发布订阅  订阅
+        /// </summary>
+        /// <param name="subChannel"></param>
+        /// <param name="handler"></param>
+        public void Subscribe(string subChannel, Action<RedisChannel, RedisValue> handler = null)
+        {
+            ISubscriber sub = _conn.GetSubscriber();
+            sub.Subscribe(subChannel, (channel, message) =>
+            {
+                if (handler == null)
+                {
+                    Console.WriteLine(subChannel + " 订阅收到消息：" + message);
+                }
+                else
+                {
+                    handler(channel, message);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Redis发布订阅  发布
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="channel"></param>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        public long Publish<T>(string channel, T msg)
+        {
+            ISubscriber sub = _conn.GetSubscriber();
+            return sub.Publish(channel, ConvertJson(msg));
+        }
+        /// <summary>
+        /// Redis发布订阅  取消订阅
+        /// </summary>
+        /// <param name="channel"></param>
+        public void Unsubscribe(string channel)
+        {
+            ISubscriber sub = _conn.GetSubscriber();
+            sub.Unsubscribe(channel);
+        }
+
+        /// <summary>
+        /// Redis发布订阅  取消全部订阅
+        /// </summary>
+        public void UnsubscribeAll()
+        {
+            ISubscriber sub = _conn.GetSubscriber();
+            sub.UnsubscribeAll();
+        }
+
+        #endregion
+
+        #region 其他
+
+        public ITransaction CreateTransaction()
+        {
+            return GetDatabase().CreateTransaction();
+        }
+
+        public IDatabase GetDatabase()
+        {
+            return _conn.GetDatabase(DbNum);
+        }
+
+        public IServer GetServer(string hostAndPort)
+        {
+            return _conn.GetServer(hostAndPort);
+        }
+
+        /// <summary>
+        /// 设置前缀
+        /// </summary>
+        /// <param name="customKey"></param>
+        public void SetSysCustomKey(string customKey)
+        {
+            CustomKey = customKey;
+        }
+
+        #endregion 
     }
 }
