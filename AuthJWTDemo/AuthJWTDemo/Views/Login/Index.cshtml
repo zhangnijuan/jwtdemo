@@ -54,10 +54,9 @@
     $('#getBtn').on('click', e=> {
         let array = auth.split('.');
         let json = $.base64.decode(array[1]);
-        let authObj = JSON.parse(json);
-        let exp = new Date(authObj.Exp);
+        let authObj = JSON.parse(json);        
         let nowExp = Date.parse(new Date()) / 1000;
-        if (exp - nowExp <= 10) {
+        if (authObj.Exp - nowExp <= 10) {
             $.post('/login/RefreshToken',
                 { uid: authObj.Uid, refreshToken },
                 res => {

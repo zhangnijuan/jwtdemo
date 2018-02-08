@@ -28,7 +28,7 @@ namespace AuthJWTDemo.Models
                     AuthInfo auth = decoder.DecodeToObject<AuthInfo>(tonken, secretKey, verify: true);
                     if (auth != null)
                     {
-                        DateTime utime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                        DateTime utime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc);
                         var timeDiff = Convert.ToInt64((DateTime.Now - utime).TotalSeconds);
                         if (timeDiff <= auth.Exp)
                         {

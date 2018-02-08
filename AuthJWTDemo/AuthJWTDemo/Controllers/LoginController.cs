@@ -26,12 +26,13 @@ namespace AuthJWTDemo.Controllers
         {
             if (uname == "admin" && pwd == "123")
             {
-                DateTime utime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                DateTime utime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc);
+                var exp = Convert.ToInt64(Math.Round((DateTime.Now - utime).TotalSeconds)) + 60;
                 AuthInfo auth = new AuthInfo()
                 {
                     Name = "zhangnijuan",
                     Uid = 2,
-                    Exp = Convert.ToInt64(Math.Round((DateTime.Now - utime).TotalSeconds)) + 60
+                    Exp = exp
                 };
                 // var secretKey = "GQDstcKsx0NHjPOuXOYg5MbeJ1XT0uFiwDVvVBrk";
                 string token = GetToken(auth);
@@ -41,7 +42,7 @@ namespace AuthJWTDemo.Controllers
                 if (string.IsNullOrEmpty(redis.StringGet(cacheKey)))
                 {
                     refreshToken = Guid.NewGuid().ToString();
-                    redis.StringSet(cacheKey, refreshToken,new TimeSpan(0,1,0));
+                    redis.StringSet(cacheKey, refreshToken,new TimeSpan(20,1,0));
                 }
                 else
                 {
@@ -73,7 +74,7 @@ namespace AuthJWTDemo.Controllers
             var cache = redis.StringGet(cacheKey);
             if (cache != null)
             {
-                DateTime utime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                DateTime utime = new DateTime(1970, 1, 1, 8, 0, 0, DateTimeKind.Utc);
                 AuthInfo auth = new AuthInfo()
                 {
                     Name = "zhangnijuan",
