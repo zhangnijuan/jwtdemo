@@ -9,6 +9,6 @@ namespace AuthJWTDemo.Models
     {
         public int Uid { get; set; }
         public string Name { get; set; }
-        public int Exp { get; set; }
+        public long Exp { get; set; }
     }
 }
